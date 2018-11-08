@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ouroom.web.brddt.BrdDetailMapper">
+<select id="item_seq" resultType="com.ouroom.web.item.Item">
+	SELECT 
+	SEQ,TITLE,PRICE,DELIVERY,DISCOUNT,PHOTO,SALE_CNT,STORE_CNT,SUM
+	FROM ITEM
+	WHERE SEQ LIKE #{seq};
+</select>
+
+<select id="item_opt" resultType="com.ouroom.web.item.Item">
+	SELECT * FROM ITEM_OPTION
+	WHERE ITEM_SEQ LIKE #{seq};
+</select>
+<select id="review" resultType="com.ouroom.web.brddt.Review">
+
+	  SELECT *
+       FROM (
+           SELECT
+               ROW_NUMBER() OVER(ORDER BY A.SEQ DESC) AS NUM,
+               A.*
+           FROM
+               REVIEW A
+       )B
+       WHERE B.NUM BETWEEN  #{beginRow} AND #{endRow}
+       ORDER BY B.NUM;
+</select>
+<insert id="rev_insert">
+	INSERT INTO REVIEW (CONTENTS,REGI_DATE,IMAGE,NICKNAME)
+	VALUES(#{contents},#{regi_date},#{image},#{nickname});
+</insert>
+<delete id="rev_delete">
+	DELETE FROM REVIEW WHERE SEQ LIKE #{seq};
+</delete>
+<select id="rev_cnt" resultType="int" >
+	SELECT COUNT(*) FROM REVIEW;
+</select>
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ouroom.web.item.ItemMapper">
+
+<select id="list" resultType="com.ouroom.web.item.Item">
+		<!-- select * from item i join category2 c where i.CATEGORY2_SEQ = c.SEQ and i.seq>82 order by i.seq desc; -->
+		SELECT *
+       FROM (
+           SELECT
+               ROW_NUMBER() OVER(ORDER BY A.${ag}) AS NUM,
+               A.*,c.CATEGORY
+           FROM
+               ITEM A join CATEGORY2 c WHERE A.CATEGORY2_SEQ=c.SEQ
+       )B
+       WHERE B.NUM BETWEEN  #{sp} AND #{ep}
+       ORDER BY B.NUM;
+		
+	</select>
+	
+	<select id="count" resultType="int">
+	select count(*) from ITEM where SEQ>82 order by SEQ desc;
+	</select>
+	
+	<select id="read" resultType="com.ouroom.web.item.Item">
+	select *,io.SEQ seqo from ITEM i join ITEM_OPTION io where i.SEQ = io.ITEM_SEQ and i.SEQ = #{seq};
+	</select>
+	
+	<select id="c1" resultType="com.ouroom.web.item.Item">
+	select * from CATEGORY1;
+	</select>
+	<select id="c2" resultType="com.ouroom.web.item.Item">
+	select * from CATEGORY2 where CATEGORY1_SEQ=#{seq};
+	</select>
+	
+	<select id="listSelect" resultType="com.ouroom.web.item.Item">
+	
+ SELECT *
+       FROM (
+           SELECT
+               ROW_NUMBER() OVER(ORDER BY A.${ag}) AS NUM,
+               A.*,c.CATEGORY
+           FROM
+               ITEM A join CATEGORY2 c WHERE A.CATEGORY2_SEQ=c.SEQ and A.CATEGORY2_SEQ= #{category}
+       )B
+       WHERE B.NUM BETWEEN  #{sp} AND #{ep}
+       ORDER BY B.NUM;
+       
+	</select>
+	<select id="listsearch" resultType="com.ouroom.web.item.Item">
+	
+ 	SELECT *
+       FROM (
+           SELECT
+               ROW_NUMBER() OVER(ORDER BY A.${ag}) AS NUM,
+               A.*,c.CATEGORY
+           FROM
+               ITEM A join CATEGORY2 c WHERE A.CATEGORY2_SEQ=c.SEQ and A.TITLE like '%${search}%'
+       )B
+       WHERE B.NUM BETWEEN  #{sp} AND #{ep}
+       ORDER BY B.NUM;
+       
+	</select>
+	<insert id="cartAdd" >
+	insert into CART(MEM_SEQ,ITEM_SEQ,CNT,OPTION_SEQ) values(#{userid},#{seq},#{itemCount},#{itemSeq});
+	</insert>
+	
+	<select id="cartList" resultType="com.ouroom.web.item.Item">
+	select distinct ITEM_SEQ from CART where MEM_SEQ =#{userid};
+	</select>
+	
+	<select id="selectOne" resultType="com.ouroom.web.item.Item">
+	select * from ITEM i join CATEGORY2 c on i.CATEGORY2_SEQ = c.SEQ where i.SEQ=#{item_seq};
+	</select>
+	
+	<select id="cartOption" resultType="com.ouroom.web.item.Item">
+	select * from CART c join ITEM_OPTION io on c.OPTION_SEQ = io.SEQ  join ITEM i on i.SEQ = c.ITEM_SEQ where c.ITEM_SEQ = ${item_seq} and c.MEM_SEQ= #{userid};
+	</select>
+	
+	<delete id="cartDelete">
+	delete from CART where MEM_SEQ = #{mem_seq} and ITEM_SEQ=#{item_seq};
+	</delete>
+	
+	<insert id="purC" >
+	insert into PURCHASE(MEM_SEQ,ITEM_SEQ,CNT,OPTION_SEQ) values(#{mem_seq},#{item_seq},#{cnt},#{option_seq});
+	</insert>
+	
+	<select id="cartAll" resultType="com.ouroom.web.item.Item">
+	select * from CART where MEM_SEQ = #{mem_seq}
+	</select>
+	
+	<insert id="itemAdd" >
+	insert into ITEM(TITLE,PRICE,DELIVERY,DISCOUNT,PHOTO,CATEGORY2_SEQ,SUM,SALE_CNT,STORE_CNT) values(#{title},#{price},#{delivery},#{discount},#{photo},#{category2},#{sum},0,#{store_cnt});
+	</insert>
+	
+	<select id="ItemPk" resultType="java.lang.String">
+	select SEQ from ITEM where TITLE like #{title}
+	</select>
+	
+	<insert id="insertOption" >
+	insert into ITEM_OPTION(OPTIONS,ITEM_SEQ) values(#{options},#{seq})
+	</insert>
+	
+	<insert id="insertItemPost" >
+	insert into ITEM_POST(VIEW_CNT,LIKE_CNT,SHARE_CNT,BOARD_SEQ,ITEM_SEQ,IMAGE,CONTENT) values(0,0,0,2,#{seq},#{img},#{content})
+	</insert>
+	
+	
+	<update id="updateItem">
+	update ITEM set SALE_CNT=#{cnt}+SALE_CNT where SEQ =#{item_seq};
+	</update>
+	
+	
+	
+</mapper>
